@@ -4,6 +4,7 @@ import com.spring.security.jwttoken.model.dto.request.RegisterRequest;
 import com.spring.security.jwttoken.model.dto.request.AuthenticationRequest;
 import com.spring.security.jwttoken.model.dto.response.AuthenticationResponse;
 import com.spring.security.jwttoken.service.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,5 +32,15 @@ public class AuthController {
             @RequestBody final AuthenticationRequest authenticationRequest
     ) {
         return ResponseEntity.ok(authenticationService.authenticate(authenticationRequest));
+    }
+
+    @PostMapping("/token/refresh")
+    public ResponseEntity<String> refreshToken(
+            final HttpServletRequest refreshTokenRequest
+    ) {
+        final String accessToken = authenticationService
+                .generateAccessTokenUsingByRefreshToken(refreshTokenRequest);
+
+        return ResponseEntity.ok(accessToken);
     }
 }
