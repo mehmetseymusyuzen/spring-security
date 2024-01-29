@@ -9,6 +9,7 @@ import com.spring.security.jwttoken.model.dto.request.RegisterRequest;
 import com.spring.security.jwttoken.model.dto.response.AuthenticationResponse;
 import com.spring.security.jwttoken.repository.TokenRepository;
 import com.spring.security.jwttoken.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,15 +53,52 @@ public class AuthenticationService {
                 .findByEmail(authenticationRequest.getEmail())
                 .orElseThrow();
 
-        var jwtToken = jwtService.generateToken(user);
-
         this.revokeAllUserTokens(user);
 
-        saveUserToken(user, jwtToken);
+        final String accessToken = jwtService
+                .generateToken(user);
+
+        saveUserToken(user, accessToken);
+
+        final String refreshToken = jwtService
+                .generateRefreshToken(user);
+
+        saveUserToken(user, refreshToken);
+
 
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
+    }
+
+    public String generateAccessTokenUsingByRefreshToken(
+            final HttpServletRequest request
+    ) {
+
+        final String refreshToken = jwtService.getJwtFromHeader(request);
+
+        final String userEmail = jwtService.extractUsername(refreshToken);
+
+        if (userEmail != null) {
+
+            var user = this.userRepository
+                    .findByEmail(userEmail)
+                    .orElseThrow();
+
+            if (jwtService.isTokenValid(refreshToken, user)) {
+
+
+                final String accessToken = jwtService.generateToken(user);
+                saveUserToken(user, accessToken);
+
+                revokeAllUserTokens(user);
+
+                return accessToken;
+            }
+        }
+
+        throw new RuntimeException();
     }
 
     private void revokeAllUserTokens(final User user) {
