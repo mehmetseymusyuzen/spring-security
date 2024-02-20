@@ -1,5 +1,6 @@
 package com.spring.security.jwttoken.model.dto.request;
 
+import com.spring.security.jwttoken.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,5 +18,6 @@ public class RegisterRequest {
     private String lastname;
     private String email;
     private String password;
+    private Role role;
 
 }
