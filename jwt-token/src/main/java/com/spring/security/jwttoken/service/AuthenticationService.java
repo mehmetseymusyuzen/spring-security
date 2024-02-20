@@ -34,7 +34,7 @@ public class AuthenticationService {
                 .lastname(registerRequest.getLastname())
                 .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .role(Role.USER)
+                .role(registerRequest.getRole())
                 .build();
 
         userRepository.save(user);
@@ -90,7 +90,6 @@ public class AuthenticationService {
 
 
                 final String accessToken = jwtService.generateToken(user);
-                saveUserToken(user, accessToken);
 
                 revokeAllUserTokens(user);
 
